@@ -42,7 +42,7 @@ class KUDEGen {
           fs.mkdirSync(tempDestFolder, { recursive: true });
         }
       } else {
-        tempDestFolder = destFolder;
+        tempDestFolder = destFolder!; // Non-null assertion since we checked !destFolder above
         if (tempDestFolder.indexOf(" ") > -1) {
           reject(
             new Error("El parámetro 'destFolder' no debe contener espacios")
@@ -55,7 +55,7 @@ class KUDEGen {
       console.log("fullCommand", fullCommand);
       exec(
         fullCommand,
-        { encoding: "UTF-8", maxBuffer: 1024 * 1024 },
+        { encoding: "utf8", maxBuffer: 1024 * 1024 },
         (error: any, stdout: any, stderr: any) => {
           if (error) {
             // Clean up temp directory if we created it
