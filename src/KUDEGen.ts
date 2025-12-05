@@ -36,7 +36,25 @@ class KUDEGen {
         fs.mkdirSync(tempDestFolder, { recursive: true });
       }
 
-      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" ${xml} ${srcJasper} ${tempDestFolder} "${jsonParam}"`;
+      // Convert jsonParam to JSON string if provided, otherwise use empty JSON object
+      let jsonParamStr = "{}";
+      if (jsonParam !== undefined && jsonParam !== null) {
+        if (typeof jsonParam === 'string') {
+          // If it's already a string, try to parse it to validate it's JSON
+          try {
+            JSON.parse(jsonParam);
+            jsonParamStr = jsonParam; // Valid JSON string, use as-is
+          } catch {
+            // If it's not valid JSON (e.g., a file path), use empty object
+            jsonParamStr = "{}";
+          }
+        } else {
+          // If it's an object, stringify it
+          jsonParamStr = JSON.stringify(jsonParam);
+        }
+      }
+
+      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" ${xml} ${srcJasper} ${tempDestFolder} "${jsonParamStr}"`;
       console.log("fullCommand", fullCommand);
       exec(
         fullCommand,
