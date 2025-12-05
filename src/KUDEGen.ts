@@ -37,8 +37,8 @@ class KUDEGen {
 
       exec(
         fullCommand,
-        { encoding: "UTF-8", maxBuffer: 1024 * 1024 },
-        (error, stdout, stderr) => {
+        { encoding: "utf8", maxBuffer: 1024 * 1024 },
+        (error: any, stdout: any, stderr: any) => {
           if (error) {
             console.error("Exec error:", error);
             return reject(error);
