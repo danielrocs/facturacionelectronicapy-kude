@@ -60,6 +60,10 @@ class KUDEGen {
         fullCommand,
         { encoding: "utf8", maxBuffer: 1024 * 1024 },
         (error: any, stdout: any, stderr: any) => {
+          // Log output for debugging
+          if (stdout) console.log("Java stdout:", stdout);
+          if (stderr) console.log("Java stderr:", stderr);
+
           if (error) {
             // Clean up temp directory
             if (fs.existsSync(tempDestFolder)) {
@@ -69,19 +73,8 @@ class KUDEGen {
                 console.error("Error cleaning up temp directory:", cleanupErr);
               }
             }
-            reject(error);
-            return;
-          }
-          if (stderr) {
-            // Clean up temp directory
-            if (fs.existsSync(tempDestFolder)) {
-              try {
-                fs.rmSync(tempDestFolder, { recursive: true, force: true });
-              } catch (cleanupErr) {
-                console.error("Error cleaning up temp directory:", cleanupErr);
-              }
-            }
-            reject(stderr);
+            const errorMsg = `Java process error: ${error.message}\nstdout: ${stdout || 'none'}\nstderr: ${stderr || 'none'}`;
+            reject(new Error(errorMsg));
             return;
           }
 
@@ -91,7 +84,7 @@ class KUDEGen {
             const pdfFile = files.find((file: string) => file.endsWith('.pdf'));
             
             if (!pdfFile) {
-              const errorMsg = `No PDF file found in destination folder: ${tempDestFolder}`;
+              const errorMsg = `No PDF file found in destination folder: ${tempDestFolder}\nstdout: ${stdout || 'none'}\nstderr: ${stderr || 'none'}`;
               // Clean up temp directory
               if (fs.existsSync(tempDestFolder)) {
                 try {
