@@ -13,7 +13,7 @@ class KUDEGen {
     srcJasper: string, //Path de los archivos .jasper
     destFolder: string, //Path destino del Archivo PDF
     jsonParam?: any //Parámetros a enviar al reporte en formato JSON
-  ) {
+  ): Promise<Buffer> {
     return new Promise(async (resolve, reject) => {
       const classPath = "" + __dirname + "/jasperLibs/";
       const jarFile = "" + __dirname + "/CreateKude.jar";
