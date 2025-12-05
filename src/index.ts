@@ -7,10 +7,10 @@ class QRGen {
     java8Path: string,
     xmlSigned: string,
     urlLogo: string,
-    ambiente: string
+    jsonParam?: any
   ): Promise<Buffer> => {
-    // Call generateKUDE - ambiente is the destination folder
-    const pdfBuffer = await kudeGen.generateKUDE(java8Path, xmlSigned, urlLogo, ambiente);
+    // Call generateKUDE - returns a buffer, no files are written to disk
+    const pdfBuffer = await kudeGen.generateKUDE(java8Path, xmlSigned, urlLogo, jsonParam);
     
     return pdfBuffer;
   };
