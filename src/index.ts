@@ -6,7 +6,7 @@ class QRGen {
     xmlSigned: string,
     urlLogo: string,
     ambiente: string
-  ): Promise<any> => {
+  ): Promise<Buffer> => {
     return kudeGen.generateKUDE(java8Path, xmlSigned, urlLogo, ambiente);
   };
 }
