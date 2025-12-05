@@ -1,89 +1,69 @@
-import { exec } from "child_process";
+const { exec } = require("child_process");
 import fs from "fs";
-import path from "path"; // Import path for safer file handling
 
 class KUDEGen {
   /**
-   * Genera el archivo KUDE para la Factura Electronica y retorna un Buffer
-   * @param java8Path Path al ejecutable de Java 8
-   * @param xml Contenido XML o Path al XML
-   * @param srcJasper Path de los archivos .jasper
-   * @param destFolder Path destino donde el JAR guardará el PDF temporalmente
-   * @param jsonParam Parámetros a enviar al reporte en formato JSON
-   * @returns Promise<Buffer>
+   * Genera el archivo KUDE para la Factura Electronica
+   * @param xml
+   * @returns
    */
   generateKUDE(
     java8Path: string,
-    xml: string, 
-    srcJasper: string, 
-    destFolder: string, 
-    jsonParam?: any 
-  ): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const classPath = path.join(__dirname, "jasperLibs");
-      const jarFile = path.join(__dirname, "CreateKude.jar");
+    xml: string, //XML Content or XML Path
+    srcJasper: string, //Path de los archivos .jasper
+    destFolder: string, //Path destino del Archivo PDF
+    jsonParam?: any //Parámetros a enviar al reporte en formato JSON
+  ) {
+    return new Promise(async (resolve, reject) => {
+      const classPath = "" + __dirname + "/jasperLibs/";
+      const jarFile = "" + __dirname + "/CreateKude.jar";
+      const tmpXMLToSign = "" + __dirname + "/xml_sign_temp.xml";
 
-      // Validation logic
-      if (xml.includes(" ")) return reject(new Error("El parámetro 'xml' no debe contener espacios"));
-      if (srcJasper.includes(" ")) return reject(new Error("El parámetro 'srcJasper' no debe contener espacios"));
-      if (destFolder.includes(" ")) return reject(new Error("El parámetro 'destFolder' no debe contener espacios"));
+      if (xml.indexOf(" ") > -1) {
+        reject(new Error("El parámetro 'xml' no debe contener espacios"));
+      }
 
-      // Command construction
-      // Note: Added .trim() to jsonParam to ensure clean input
-      const params = jsonParam ? `"${jsonParam}"` : "";
-      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" ${xml} ${srcJasper} ${destFolder} ${params}`;
-      
-      console.log("Executing KUDE Gen:", fullCommand);
+      if (srcJasper.indexOf(" ") > -1) {
+        reject(new Error("El parámetro 'srcJasper' no debe contener espacios"));
+      }
 
+      if (destFolder.indexOf(" ") > -1) {
+        reject(
+          new Error("El parámetro 'destFolder' no debe contener espacios")
+        );
+      }
+
+      //fs.writeFileSync(tmpXMLToSign, xml, { encoding: "utf8" });
+      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" ${xml} ${srcJasper} ${destFolder} "${jsonParam}"`;
+      console.log("fullCommand", fullCommand);
       exec(
         fullCommand,
-        { encoding: "utf8", maxBuffer: 1024 * 1024 },
+        { encoding: "UTF-8", maxBuffer: 1024 * 1024 },
         (error: any, stdout: any, stderr: any) => {
           if (error) {
-            console.error("Exec error:", error);
-            return reject(error);
+            reject(error);
           }
-          
-          // Note: If stderr is just warnings, you might not want to reject immediately.
-          // If the JAR treats warnings as fatal, keep this. Otherwise, consider logging it instead.
-          if (stderr && stderr.trim().length > 0) {
-             console.warn("KUDE Gen Stderr:", stderr);
-             // return reject(new Error(stderr)); // Uncomment if stderr should fail the process
+          if (stderr) {
+            reject(stderr);
           }
 
           try {
-            // ---------------------------------------------------------
-            // CRITICAL STEP: Determine the path of the generated file
-            // ---------------------------------------------------------
-            
-            // Scenario A: The JAR prints the absolute path of the generated PDF to stdout
-            let generatedFilePath = stdout.trim();
-
-            // Scenario B: If stdout is not just the path (e.g. contains logs), 
-            // you might need to construct the path manually. 
-            // Example:
-            // const fileName = path.basename(xml).replace('.xml', '.pdf');
-            // generatedFilePath = path.join(destFolder, fileName);
-
-            if (!fs.existsSync(generatedFilePath)) {
-               return reject(new Error(`Generated file not found at: ${generatedFilePath}`));
-            }
-
-            // Read the file into a Buffer
-            const fileBuffer = fs.readFileSync(generatedFilePath);
-
-            // OPTIONAL: Delete the file after reading if you only want it in memory
-            // fs.unlinkSync(generatedFilePath);
-
-            resolve(fileBuffer);
-
+            //file removed
+            //fs.unlinkSync(tmpXMLToSign);
           } catch (err) {
-            console.error("Error reading KUDE output file:", err);
-            reject(err);
+            console.error(err);
           }
+
+          //console.log(`signedXML: ${stdout}`);
+
+          //resolve(Buffer.from(`${stdout}`,'utf8').toString());
+          //fs.writeFileSync(tmpXMLToSign + ".result.xml", `${stdout}`, {encoding: 'utf8'});
+          //let resultXML = fs.readFileSync(tmpXMLToSign + ".result.xml", {encoding: 'utf8'});
+          resolve(Buffer.from(stdout, 'utf8'));
         }
       );
     });
+    //});
   }
 }
 
