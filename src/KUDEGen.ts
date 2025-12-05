@@ -60,9 +60,15 @@ class KUDEGen {
           //fs.writeFileSync(tmpXMLToSign + ".result.xml", `${stdout}`, {encoding: 'utf8'});
           //let resultXML = fs.readFileSync(tmpXMLToSign + ".result.xml", {encoding: 'utf8'});
           //resolve(Buffer.from(`${stdout}`,'utf8'));
-          console.log("stdout", stdout);
-          
-          resolve(stdout);
+          //console.log("stdout", stdout);
+          const generatedFilePath = typeof stdout === "string" ? stdout.trim() : "";
+          if (!generatedFilePath || !fs.existsSync(generatedFilePath)) {
+            reject(new Error(`Generated file not found at path: ${generatedFilePath}`));
+            return;
+          }
+          const fileBuffer = fs.readFileSync(generatedFilePath);
+          resolve(fileBuffer);
+          //resolve(stdout);
         }
       );
     });
