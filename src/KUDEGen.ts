@@ -35,6 +35,7 @@ class KUDEGen {
       if (!fs.existsSync(tempDestFolder)) {
         fs.mkdirSync(tempDestFolder, { recursive: true });
       }
+      console.log(`Temp destination folder created: ${tempDestFolder}`);
 
       // Convert jsonParam to JSON string if provided, otherwise use empty JSON object
       let jsonParamStr = "{}";
@@ -54,12 +55,13 @@ class KUDEGen {
         }
       }
 
-      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" ${xml} ${srcJasper} ${tempDestFolder} "${jsonParamStr}"`;
+      // Quote all path arguments to handle any potential spaces
+      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" "${xml}" "${srcJasper}" "${tempDestFolder}" "${jsonParamStr}"`;
       console.log("fullCommand", fullCommand);
       exec(
         fullCommand,
         { encoding: "utf8", maxBuffer: 1024 * 1024 },
-        (error: any, stdout: any, stderr: any) => {
+        async (error: any, stdout: any, stderr: any) => {
           // Log output for debugging
           if (stdout) console.log("Java stdout:", stdout);
           if (stderr) console.log("Java stderr:", stderr);
@@ -79,12 +81,39 @@ class KUDEGen {
           }
 
           try {
+            // Wait a bit for the Java process to finish writing the file
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             // Find the generated PDF file in the temporary folder
-            const files = fs.readdirSync(tempDestFolder);
-            const pdfFile = files.find((file: string) => file.endsWith('.pdf'));
+            let files: string[] = [];
+            let pdfFile: string | undefined;
+            
+            // Try reading the directory a few times in case the file is still being written
+            for (let attempt = 0; attempt < 3; attempt++) {
+              if (fs.existsSync(tempDestFolder)) {
+                files = fs.readdirSync(tempDestFolder);
+                console.log(`Files in temp directory (${tempDestFolder}) - attempt ${attempt + 1}:`, files);
+                pdfFile = files.find((file: string) => file.endsWith('.pdf'));
+                if (pdfFile) break;
+              }
+              if (attempt < 2) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+              }
+            }
             
             if (!pdfFile) {
-              const errorMsg = `No PDF file found in destination folder: ${tempDestFolder}\nstdout: ${stdout || 'none'}\nstderr: ${stderr || 'none'}`;
+              // List all files for debugging
+              const allFiles = files.map(f => {
+                const filePath = path.join(tempDestFolder, f);
+                try {
+                  const stats = fs.statSync(filePath);
+                  return `${f} (${stats.isFile() ? 'file' : 'dir'}, ${stats.size} bytes)`;
+                } catch {
+                  return `${f} (unknown)`;
+                }
+              }).join(', ');
+              
+              const errorMsg = `No PDF file found in destination folder: ${tempDestFolder}\nFiles found: ${allFiles || 'none'}\nstdout: ${stdout || 'none'}\nstderr: ${stderr || 'none'}`;
               // Clean up temp directory
               if (fs.existsSync(tempDestFolder)) {
                 try {
