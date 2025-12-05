@@ -61,17 +61,7 @@ class KUDEGen {
           //let resultXML = fs.readFileSync(tmpXMLToSign + ".result.xml", {encoding: 'utf8'});
           //resolve(Buffer.from(`${stdout}`,'utf8'));
           console.log("stdout", stdout);
-          // INSERT_YOUR_CODE
-          // stdout is expected to be the filename of the generated PDF. Read it and return as Buffer.
-          const fs = require("fs");
-          const generatedFilePath = typeof stdout === "string" ? stdout.trim() : destFolder;
-          if (!generatedFilePath || !fs.existsSync(generatedFilePath)) {
-            reject(new Error(`Generated file not found at path: ${generatedFilePath}`));
-            return;
-          }
-          const fileBuffer = fs.readFileSync(generatedFilePath);
-          resolve(fileBuffer);
-          return;
+          
           resolve(stdout);
         }
       );
