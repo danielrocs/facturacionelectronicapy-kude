@@ -1,6 +1,5 @@
 const { exec } = require("child_process");
 import fs from "fs";
-import CreateKude from "./CreateKude";
 
 class KUDEGen {
   /**
@@ -35,13 +34,37 @@ class KUDEGen {
       }
 
       //fs.writeFileSync(tmpXMLToSign, xml, { encoding: "utf8" });
-      const pdfBuffer = await CreateKude.main(Buffer.from(xml, 'utf8'), classPath);
+      const fullCommand = `"${java8Path}" -Dfile.encoding=IBM850 -classpath "${classPath}" -jar "${jarFile}" ${xml} ${srcJasper} ${destFolder} "${jsonParam}"`;
       
-      console.log("pdfBuffer", pdfBuffer);
+      console.log("fullCommand", fullCommand);
+      exec(
+        fullCommand,
+        { encoding: "UTF-8", maxBuffer: 1024 * 1024 },
+        (error: any, stdout: any, stderr: any) => {
+          if (error) {
+            reject(error);
+          }
+          if (stderr) {
+            reject(stderr);
+          }
 
+          try {
+            //file removed
+            //fs.unlinkSync(tmpXMLToSign);
+          } catch (err) {
+            console.error(err);
+          }
 
-          resolve(pdfBuffer);
+          //console.log(`signedXML: ${stdout}`);
+
+          //resolve(Buffer.from(`${stdout}`,'utf8').toString());
+          //fs.writeFileSync(tmpXMLToSign + ".result.xml", `${stdout}`, {encoding: 'utf8'});
+          //let resultXML = fs.readFileSync(tmpXMLToSign + ".result.xml", {encoding: 'utf8'});
+          resolve(Buffer.from(stdout, 'utf8'));
+        }
+      );
     });
+    //});
   }
 }
 
