@@ -79,6 +79,65 @@ class CreateKude {
 
   private generatePDF(xml: string, documentData: DocumentData, parametros: Record<string, any>, classPath: string ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
+      const { exec } = require('child_process');
+      const os = require('os');
+      const crypto = require('crypto');
+
+      try {
+        // Create temporary directory for output
+        const tempDir = path.join(os.tmpdir(), 'kude-' + crypto.randomBytes(8).toString('hex'));
+        require('fs').mkdirSync(tempDir, { recursive: true });
+
+        // Build classpath including all jasperLibs
+        const jasperLibsPath = path.join(classPath, 'jasperLibs');
+        const libFiles = require('fs').readdirSync(jasperLibsPath)
+          .filter((file: string) => file.endsWith('.jar'))
+          .map((file: string) => path.join(jasperLibsPath, file));
+
+        const classPathArg = [path.join(__dirname, 'CreateKude.jar'), ...libFiles].join(require('path').delimiter);
+
+        // Prepare arguments for JAR execution
+        const args = [
+          xml,                                    // args[0]: XML content/path
+          path.join(classPath, 'DE'),            // args[1]: Jasper templates path
+          tempDir,                               // args[2]: Output directory
+          JSON.stringify(parametros)             // args[3]: Parameters as JSON
+        ];
+
+        // Execute JAR file
+        const jarCommand = `java -cp "${classPathArg}" CreateKude ${args.map(arg => `"${arg}"`).join(' ')}`;
+
+        exec(jarCommand, { cwd: __dirname }, (error: any, stdout: string, stderr: string) => {
+          if (error) {
+            console.error('Error executing JAR:', error);
+            console.error('stderr:', stderr);
+            reject(error);
+            return;
+          }
+
+          try {
+            // The JAR generates a PDF with the name based on document data
+            const pdfFileName = `${documentData.tipoDocumentoDescripcion}_${documentData.timbrado}-${documentData.establecimiento}-${documentData.punto}-${documentData.numero}${documentData.serie ? '-' + documentData.serie : ''}.pdf`;
+            const pdfPath = path.join(tempDir, pdfFileName);
+
+            // Read the generated PDF file
+            const pdfBuffer = require('fs').readFileSync(pdfPath);
+
+            // Clean up temporary directory
+            require('fs').rmSync(tempDir, { recursive: true, force: true });
+
+            resolve(pdfBuffer);
+          } catch (readError) {
+            console.error('Error reading generated PDF:', readError);
+            reject(readError);
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+
+
+
       try {
         const doc = new PDFDocument();
         const chunks: Buffer[] = [];
