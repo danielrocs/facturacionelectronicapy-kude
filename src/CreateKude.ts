@@ -40,9 +40,9 @@ class CreateKude {
     });
   }
 
-  public static async main(xml: string, classPath: string): Promise<Buffer> {
+  public static async main(xmlContent: string, classPath: string): Promise<Buffer> {
     const instance = new CreateKude();
-    return await instance.run(xml, classPath);
+    return await instance.run(xmlContent, classPath);
   }
 
   private getTemplateName(tipoDocumento: DocumentType): string {
@@ -58,9 +58,9 @@ class CreateKude {
     }
   }
 
-  private async run(xml: string, classPath: string): Promise<Buffer> {
+  private async run(xmlContent: string, classPath: string): Promise<Buffer> {
     try {
-      const dataFromXML = this.getTipoDocumentoFromXML(xml);
+      const dataFromXML = this.getTipoDocumentoFromXML(xmlContent);
       const tipoDocumento = dataFromXML.tipoDocumento;
 
       // Default parameters
@@ -68,7 +68,7 @@ class CreateKude {
       parametros.REPORT_LOCALE = 'es_PY';
 
       // Generate PDF buffer directly
-      const pdfBuffer = await this.generatePDF(xml, dataFromXML, parametros, classPath);
+      const pdfBuffer = await this.generatePDF(xmlContent, dataFromXML, parametros, classPath);
 
       return pdfBuffer;
     } catch (error) {
@@ -77,7 +77,7 @@ class CreateKude {
     }
   }
 
-  private generatePDF(xml: string, documentData: DocumentData, parametros: Record<string, any>, classPath: string ): Promise<Buffer> {
+  private generatePDF(xmlContent: string, documentData: DocumentData, parametros: Record<string, any>, classPath: string ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const { exec } = require('child_process');
       const os = require('os');
@@ -98,7 +98,7 @@ class CreateKude {
 
         // Prepare arguments for JAR execution
         const args = [
-          xml,                                    // args[0]: XML content/path
+          xmlContent,                            // args[0]: XML content (string)
           path.join(classPath, 'DE'),            // args[1]: Jasper templates path
           tempDir,                               // args[2]: Output directory
           JSON.stringify(parametros)             // args[3]: Parameters as JSON
@@ -147,14 +147,7 @@ class CreateKude {
         doc.on('error', reject);
 
         // Parse XML to extract item data (similar to JasperReports data source)
-        let xmlContent: string;
-        if (xml.startsWith('<?xml')) {
-          xmlContent = xml;
-        } else {
-          xmlContent = fs.readFileSync(path.join(classPath, 'Extructura xml_DE.xml'), 'utf8');
-        }
-
-        const parsedXML = this.xmlParser.parse(xmlContent);
+        const parsedXMLData = this.xmlParser.parse(xmlContent);
 
         // Header
         doc.fontSize(18).text('KUDE - Factura Electrónica', { align: 'center' });
@@ -174,7 +167,7 @@ class CreateKude {
 
         // Try to extract and display items from XML
         try {
-          const rDE = parsedXML.rDE;
+          const rDE = parsedXMLData.rDE;
           const DE = rDE.DE;
           const gCamItems = DE.gCamItem;
 
@@ -219,15 +212,8 @@ class CreateKude {
     });
   }
 
-  private getTipoDocumentoFromXML(archivoDEXML: string): DocumentData {
+  private getTipoDocumentoFromXML(xmlContent: string): DocumentData {
     try {
-      let xmlContent: string;
-
-      if (archivoDEXML.startsWith('<?xml')) {
-        xmlContent = archivoDEXML;
-      } else {
-        xmlContent = fs.readFileSync(archivoDEXML, 'utf8');
-      }
 
       const parsedXML = this.xmlParser.parse(xmlContent);
 
