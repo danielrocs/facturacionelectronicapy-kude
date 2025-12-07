@@ -40,9 +40,9 @@ class CreateKude {
     });
   }
 
-  public static async main(xmlBuffer: Buffer, classPath: string): Promise<Buffer> {
+  public static async main(xml: string, classPath: string): Promise<Buffer> {
     const instance = new CreateKude();
-    return await instance.run(xmlBuffer, classPath);
+    return await instance.run(xml, classPath);
   }
 
   private getTemplateName(tipoDocumento: DocumentType): string {
@@ -58,9 +58,8 @@ class CreateKude {
     }
   }
 
-  private async run(xmlBuffer: Buffer, classPath: string): Promise<Buffer> {
+  private async run(xml: string, classPath: string): Promise<Buffer> {
     try {
-      const xml = xmlBuffer.toString('utf8');
       const dataFromXML = this.getTipoDocumentoFromXML(xml);
       const tipoDocumento = dataFromXML.tipoDocumento;
 

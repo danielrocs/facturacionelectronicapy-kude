@@ -9,7 +9,7 @@ class KUDEGen {
    * @returns
    */
   generateKUDE(
-    xml: Buffer, //XML Content or XML Path
+    xml: string, //XML Content or XML Path
     logo: Buffer,
     srcJasper: string, //Path de los archivos .jasper
     jsonParam?: any //Parámetros a enviar al reporte en formato JSON

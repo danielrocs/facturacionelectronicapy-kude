@@ -2,7 +2,7 @@ import kudeGen from "./KUDEGen";
 
 class QRGen {
   generateKUDE = (
-    xmlSigned: Buffer,
+    xmlSigned: string,
     logo: Buffer,
     srcJasper: string,
     jsonParam?: any
