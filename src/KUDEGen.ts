@@ -10,8 +10,8 @@ class KUDEGen {
    */
   generateKUDE(
     xml: string, //XML Content or XML Path
-    logo: Buffer,
     srcJasper: string, //Path de los archivos .jasper
+    logo?: Buffer,
     jsonParam?: any //Parámetros a enviar al reporte en formato JSON
   ): Promise<Buffer> {
     return new Promise(async (resolve, reject) => {

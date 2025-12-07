@@ -3,11 +3,11 @@ import kudeGen from "./KUDEGen";
 class QRGen {
   generateKUDE = (
     xmlSigned: string,
-    logo: Buffer,
     srcJasper: string,
+    logo?: Buffer,
     jsonParam?: any
   ): Promise<Buffer> => {
-    return kudeGen.generateKUDE(xmlSigned, logo, srcJasper, jsonParam);
+    return kudeGen.generateKUDE(xmlSigned, srcJasper, logo, jsonParam);
   };
 }
 
