@@ -17,9 +17,9 @@ class KUDEGen {
     return new Promise(async (resolve, reject) => {
       const classPath = "" + __dirname + "/jasperLibs/";
 
-      if (xml.indexOf(" ") > -1) {
-        reject(new Error("El parámetro 'xml' no debe contener espacios"));
-      }
+      // if (xml.indexOf(" ") > -1) {
+      //   reject(new Error("El parámetro 'xml' no debe contener espacios"));
+      // }
 
       if (srcJasper.indexOf(" ") > -1) {
         reject(new Error("El parámetro 'srcJasper' no debe contener espacios"));
