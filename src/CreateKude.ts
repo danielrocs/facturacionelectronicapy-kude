@@ -201,23 +201,5 @@ class CreateKude {
   }
 }
 
-// For command line usage
-if (require.main === module) {
-  // Read XML from stdin and output PDF buffer to stdout
-  let xmlData = '';
-  process.stdin.on('data', (chunk) => {
-    xmlData += chunk;
-  });
-  process.stdin.on('end', async () => {
-    try {
-      const xmlBuffer = Buffer.from(xmlData);
-      const pdfBuffer = await CreateKude.main(xmlBuffer);
-      process.stdout.write(pdfBuffer as any);
-    } catch (error) {
-      console.error('Error:', error);
-      process.exit(1);
-    }
-  });
-}
 
 export default CreateKude;

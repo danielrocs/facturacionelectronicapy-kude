@@ -2,12 +2,12 @@ import kudeGen from "./KUDEGen";
 
 class QRGen {
   generateKUDE = (
-    java8Path: string,
-    xmlSigned: string,
-    urlLogo: string,
-    ambiente: string
+    xmlSigned: Buffer,
+    logo: Buffer,
+    srcJasper: string,
+    jsonParam?: any
   ): Promise<Buffer> => {
-    return kudeGen.generateKUDE(java8Path, xmlSigned, urlLogo, ambiente);
+    return kudeGen.generateKUDE(xmlSigned, logo, srcJasper, jsonParam);
   };
 }
 

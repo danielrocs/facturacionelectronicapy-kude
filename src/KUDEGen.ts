@@ -9,16 +9,13 @@ class KUDEGen {
    * @returns
    */
   generateKUDE(
-    java8Path: string,
-    xml: string, //XML Content or XML Path
+    xml: Buffer, //XML Content or XML Path
+    logo: Buffer,
     srcJasper: string, //Path de los archivos .jasper
-    destFolder: string, //Path destino del Archivo PDF
     jsonParam?: any //Parámetros a enviar al reporte en formato JSON
   ): Promise<Buffer> {
     return new Promise(async (resolve, reject) => {
       const classPath = "" + __dirname + "/jasperLibs/";
-      const jarFile = "" + __dirname + "/CreateKude.jar";
-      const tmpXMLToSign = "" + __dirname + "/xml_sign_temp.xml";
 
       if (xml.indexOf(" ") > -1) {
         reject(new Error("El parámetro 'xml' no debe contener espacios"));
@@ -28,19 +25,11 @@ class KUDEGen {
         reject(new Error("El parámetro 'srcJasper' no debe contener espacios"));
       }
 
-      if (destFolder.indexOf(" ") > -1) {
-        reject(
-          new Error("El parámetro 'destFolder' no debe contener espacios")
-        );
-      }
-
-      //fs.writeFileSync(tmpXMLToSign, xml, { encoding: "utf8" });
-      const pdfBuffer = await CreateKude.main(Buffer.from(xml, 'utf8'), classPath);
+      const pdfBuffer = await CreateKude.main(xml, classPath);
       
       console.log("pdfBuffer", pdfBuffer);
 
-
-          resolve(pdfBuffer);
+      resolve(pdfBuffer);
     });
   }
 }
