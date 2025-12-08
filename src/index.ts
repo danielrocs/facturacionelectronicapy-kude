@@ -8,6 +8,6 @@ class QRGen {
     destFolderPath: string,
     jsonParam?: any
   ): Promise<string> => {
-    return await kudeGen.generateKUDE(javaPath, xmlSignedPath, srcJasperPath, destFolderPath, jsonParam);
+    return kudeGen.generateKUDE(javaPath, xmlSignedPath, srcJasperPath, destFolderPath, jsonParam);
   };
 }
