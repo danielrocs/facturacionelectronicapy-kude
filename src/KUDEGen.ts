@@ -54,7 +54,7 @@ class KUDEGen {
             console.error(err);
           }
 
-          //console.log(`signedXML: ${stdout}`);
+          console.log(`\n\nKUDEGen - stdout: ${stdout.toString()} \n\n`);
 
           //resolve(Buffer.from(`${stdout}`,'utf8').toString());
           //fs.writeFileSync(tmpXMLToSign + ".result.xml", `${stdout}`, {encoding: 'utf8'});
